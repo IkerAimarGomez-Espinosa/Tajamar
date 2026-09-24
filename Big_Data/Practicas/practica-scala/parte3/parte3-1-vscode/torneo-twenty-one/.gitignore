@@ -1,0 +1,13 @@
+# Scala / sbt build output
+target/
+project/target/
+.bloop/
+.metals/
+
+# IDE settings
+.idea/
+*.iml
+
+# Operating-system files
+.DS_Store
+Thumbs.db
