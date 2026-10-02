@@ -1,0 +1,367 @@
+
+--USE SonoraDB
+--GO
+--
+---- Ejericio 1
+--
+--SELECT SERVERPROPERTY('ProductMajorVersion') AS versionPrincipal, 
+--compatibility_level FROM sys.databases WHERE name = 'SonoraDB'; 
+--GO
+--
+---- Ejercicio 2
+--
+--SELECT name FROM sys.tables ORDER BY name ASC;
+--
+---- Ejercicio 3
+--
+--SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS 
+--WHERE TABLE_NAME = 'reproducciones' ORDER BY ORDINAL_POSITION;
+--
+---- Ejercicio 4
+--
+--SELECT nombre_usuario, plan_suscripcion, fecha_alta FROM USUARIOS 
+--WHERE pais = 'ES' ORDER BY fecha_alta ASC
+--
+---- Ejercicio 5
+--
+--SELECT titulo, duracion_seg, fecha_lanzamiento FROM CANCIONES 
+--WHERE fecha_lanzamiento >= '2026-01-01' AND fecha_lanzamiento <= '2026-12-31' 
+--AND duracion_seg >= 170 AND duracion_seg <= 200 
+--ORDER BY fecha_lanzamiento ASC;
+--
+---- Ejercicio 6
+--
+--SELECT nombre_usuario FROM USUARIOS WHERE nombre_usuario LIKE '%[_]%' ORDER BY nombre_usuario ASC;
+--
+---- El motivo por el que LIKE '%_%' no vale es por que _ es un comodin que representa culauqier caracter
+--
+---- Ejercicio 7
+--
+--SELECT DISTINCT dispositivo FROM reproducciones ORDER BY dispositivo ASC;
+--
+---- Ejercicio 8
+--
+--SELECT reproduccion_id, usuario_id, fecha_hora 
+--FROM reproducciones 
+--WHERE cancion_id IS NULL;
+--
+---- cancion_id = NULL no devuelve nada porque en SQL cualquier comparación directa con NULL devuelve desconocido, hay que usar IS NULL
+--
+---- Ejercicio 9
+--
+--SELECT TOP (2) WITH TIES reproduccion_id, usuario_id, cancion_id, segundos_escuchados 
+--FROM reproducciones ORDER BY segundos_escuchados DESC;
+--
+---- Ejercicio 10
+--
+--SELECT titulo FROM canciones ORDER BY titulo ASC
+--OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY;
+--
+---- Ejercicio 11
+--
+--SELECT canciones.titulo, canciones.duracion_seg, CASE 
+--	WHEN duracion_seg < 180 THEN 'corta' 
+--	WHEN duracion_seg >= 180 AND duracion_seg <= 240 THEN 'Media' 
+--	WHEN duracion_seg > 240 THEN 'Larga' 
+--END AS categoria 
+--FROM canciones 
+--INNER JOIN artistas ON canciones.artista_id = artistas.artista_id 
+--WHERE nombre = 'Nébula' 
+--ORDER BY titulo ASC;
+--
+---- Ejercicio 12
+--
+--SELECT nombre, CONCAT(nombre, ' (', pais, ')') AS etiqueta, LEN(nombre) AS Longitud FROM artistas ORDER BY nombre ASC;
+--
+---- Ejercicio 13
+--
+--SELECT nombre_usuario, fecha_alta, DATEDIFF(day, fecha_alta, '2026-09-24') AS dias_antiguedad FROM usuarios ORDER BY dias_antiguedad DeSC
+--
+---- Ejercicio 14
+--
+--SELECT reproduccion_id, CAST(fecha_hora AS date) AS fecha, CAST(fecha_hora AS TIME(0)) AS hora, segundos_escuchados 
+--from reproducciones WHERE usuario_id = 3;
+--
+---- Ejercicio 15
+--
+--SELECT COUNT(cancion_id) AS num_canciones, MIN(duracion_seg) AS duracion_min, MAX(duracion_seg) AS duracion_max, 
+--AVG(duracion_seg) AS media_entera, AVG(duracion_seg * 1.0) AS media_decimal FROM canciones
+--
+---- Con la columna entera AVG() hace una división entera y quita los decimales asi que al multiplicar por 1.0 se fuerza a que tenga decimales
+--
+---- Ejercicio 16
+--
+--SELECT COUNT(*) AS total_filas, COUNT(cancion_id) AS con_cancion, COUNT(DISTINCT(cancion_id)) AS canciones_distintas,
+--COUNT(DISTINCT(usuario_id)) AS usuarios_distintos FROM reproducciones;
+--
+---- COUNT(*) cuenta todas las filas de la tabla y COUNT(cancion_id) ignora los nulos (los 4 anuncios).
+--
+---- Ejercicio 17
+--
+--SELECT dispositivo, COUNT(reproduccion_id) AS reproducciones, 
+--SUM(segundos_escuchados) AS segundos, SUM(segundos_escuchados)/60.0 AS minutos 
+--FROM reproducciones GROUP BY dispositivo ORDER BY reproducciones DESC
+--
+---- Ejercicio 18
+--
+--SELECT CASE 
+--	WHEN duracion_seg < 180 THEN 'Corta' 
+--	WHEN duracion_seg >= 180 AND duracion_seg <= 240 THEN 'Media' 
+--	WHEN duracion_seg > 240 THEN 'Larga' 
+--END AS Categoria, 
+--COUNT(cancion_id) AS num_canciones, AVG(duracion_seg) AS duracion_media
+--FROM canciones
+--GROUP BY CASE 
+--	WHEN duracion_seg < 180 THEN 'Corta' 
+--	WHEN duracion_seg >= 180 AND duracion_seg <= 240 THEN 'Media' 
+--	WHEN duracion_seg > 240 THEN 'Larga' 
+--END
+--ORDER BY num_canciones DESC, CASE 
+--	WHEN duracion_seg < 180 THEN 'Corta' 
+--	WHEN duracion_seg >= 180 AND duracion_seg <= 240 THEN 'Media' 
+--	WHEN duracion_seg > 240 THEN 'Larga' 
+--END
+--
+---- Ejercicio 19
+--
+--SELECT usuarios.nombre_usuario, COUNT(tipo_contenido) AS reproducciones , SUM(segundos_escuchados) 
+--FROM reproducciones 
+--INNER JOIN usuarios ON usuarios.usuario_id = reproducciones.usuario_id
+--WHERE tipo_contenido = 'Canción'
+--GROUP BY usuarios.nombre_usuario
+--HAVING COUNT(r.reproduccion_id) > 3 AND SUM(r.segundos_escuchados) > 800
+--ORDER BY SUM(segundos_escuchados) DESC;
+--
+---- Ejercicio 20
+--
+--SELECT usuarios.plan_suscripcion, tipo_contenido, COUNT(reproduccion_id) AS reproducc
+--FROM reproducciones
+--INNER JOIN usuarios ON usuarios.usuario_id = reproducciones.usuario_id
+--GROUP BY usuarios.plan_suscripcion, tipo_contenido
+--
+---- Ejercicio 21
+--
+--SELECT artistas.nombre, canciones.titulo, generos.nombre 
+--FROM artistas 
+--INNER JOIN canciones ON artistas.artista_id = canciones.artista_id 
+--INNER JOIN generos ON generos.genero_id = canciones.genero_id 
+--WHERE artistas.pais = 'ES' 
+--ORDER BY artistas.nombre, canciones.titulo ASC
+--
+---- Ejercicio 22
+--
+--SELECT reproducciones.fecha_hora, usuarios.nombre_usuario, canciones.titulo, artistas.nombre
+--FROM canciones
+--INNER JOIN reproducciones ON canciones.cancion_id = reproducciones.cancion_id
+--INNER JOIN usuarios ON reproducciones.usuario_id = usuarios.usuario_id
+--INNER JOIN artistas ON artistas.artista_id = canciones.artista_id
+--WHERE reproducciones.fecha_hora >= '2026-09-16' AND reproducciones.fecha_hora < '2026-09-17'
+--ORDER BY fecha_hora	 ASC
+--
+---- Ejercicio 23
+--
+--SELECT reproducciones.fecha_hora, usuarios.nombre_usuario,
+--COALESCE(canciones.titulo, N'(Anuncio)') AS titulo, COALESCE(artistas.nombre, N'-') AS artista
+--FROM canciones
+--LEFT JOIN artistas ON artistas.artista_id = canciones.artista_id
+--RIGHT JOIN reproducciones ON reproducciones.cancion_id = canciones.cancion_id
+--INNER JOIN usuarios ON usuarios.usuario_id = reproducciones.usuario_id
+--WHERE reproducciones.fecha_hora >= '2026-09-16' AND reproducciones.fecha_hora <  '2026-09-17'
+--ORDER BY reproducciones.fecha_hora;
+--
+---- Falta la reproducción del anuncio porque al ser un INNER JOIN requiere que exista cancion_id, y en los anuncios es NULL
+--
+---- Ejercicio 24
+--
+--SELECT usuarios.nombre_usuario, usuarios.plan_suscripcion, usuarios.fecha_alta
+--FROM usuarios
+--LEFT JOIN reproducciones ON reproducciones.usuario_id = usuarios.usuario_id
+--WHERE reproducciones.reproduccion_id IS NULL;
+--
+---- Ejercicio 25
+--
+--SELECT reproducciones.fecha_hora, usuarios.nombre_usuario, 
+--COALESCE(canciones.titulo, '(Anuncio)') AS titulo, COALESCE(artistas.nombre, '-')
+--FROM canciones
+--LEFT JOIN reproducciones ON canciones.cancion_id = reproducciones.cancion_id
+--INNER JOIN usuarios ON reproducciones.usuario_id = usuarios.usuario_id
+--LEFT JOIN artistas ON artistas.artista_id = canciones.artista_id
+--WHERE reproducciones.fecha_hora >= '2026-09-16' AND reproducciones.fecha_hora < '2026-09-17'
+--ORDER BY fecha_hora	 ASC
+--
+---- Al usar COUNT(*), cuenta la fila vacía generada por el LEFT JOIN (devuelve 1); con COUNT(columna) ignora los nulos y devuelve 0.
+--
+---- Ejercicio 26
+--
+--SELECT empleado.nombre AS empleado,
+--empleado.puesto,
+--COALESCE(jefe.nombre, N'(sin jefe)') AS jefe
+--FROM empleados AS empleado
+--LEFT JOIN empleados AS jefe ON jefe.empleado_id = empleado.jefe_id
+--ORDER BY empleado.empleado_id;
+--
+---- Ejercicio 27
+--
+--SELECT generos.nombre AS genero,
+--COUNT(*) AS reproducciones_validas,
+--CAST(SUM(reproducciones.segundos_escuchados) / 60.0 AS decimal(10,1)) AS minutos
+--FROM reproducciones
+--INNER JOIN canciones ON canciones.cancion_id = reproducciones.cancion_id
+--INNER JOIN generos ON generos.genero_id = canciones.genero_id
+--WHERE reproducciones.segundos_escuchados >= 30
+--GROUP BY generos.genero_id, generos.nombre
+--HAVING COUNT(*) > 3
+--ORDER BY reproducciones_validas DESC;
+--
+---- Ejercicio 28
+--
+--SELECT pais FROM artistas
+--UNION
+--SELECT pais FROM usuarios
+--ORDER BY pais;
+--
+--SELECT pais FROM artistas
+--UNION ALL
+--SELECT pais FROM usuarios
+--ORDER BY pais;
+--
+---- UNION elimina los registros duplicados para mostrar solo valores únicos, mientras que UNION ALL los mantiene todos.
+--
+---- Ejercicio 29
+--
+--CREATE TABLE dbo.playlists (
+--playlist_id int IDENTITY(1,1) NOT NULL,
+--usuario_id int NOT NULL,
+--nombre nvarchar(100) NOT NULL,
+--es_publica bit NOT NULL CONSTRAINT DF_playlists_es_publica DEFAULT 0,
+--fecha_creacion datetime2(0) NOT NULL CONSTRAINT DF_playlists_fecha_creacion DEFAULT SYSDATETIME(),
+--CONSTRAINT PK_playlists PRIMARY KEY (playlist_id),
+--CONSTRAINT FK_playlists_usuarios FOREIGN KEY (usuario_id) REFERENCES dbo.usuarios (usuario_id),
+--CONSTRAINT UQ_playlists_usuario_nombre UNIQUE (usuario_id, nombre)
+--);
+--
+---- Ejercicio 30
+--
+--CREATE TABLE dbo.playlist_canciones (
+--playlist_id int NOT NULL,
+--cancion_id int NOT NULL,
+--fecha_agregada datetime2(0) NOT NULL CONSTRAINT DF_playlist_canciones_fecha_agregada DEFAULT SYSDATETIME(),
+--CONSTRAINT PK_playlist_canciones PRIMARY KEY (playlist_id, cancion_id),
+--CONSTRAINT FK_playlist_canciones_playlists FOREIGN KEY (playlist_id) REFERENCES dbo.playlists (playlist_id),
+--CONSTRAINT FK_playlist_canciones_canciones FOREIGN KEY (cancion_id) REFERENCES dbo.canciones (cancion_id)
+--);
+--
+---- Ejercicio 31
+--
+--ALTER TABLE dbo.playlists
+--ADD descripcion nvarchar(200) NULL;
+--ALTER TABLE dbo.playlists
+--ADD CONSTRAINT CK_playlists_nombre_longitud CHECK (LEN(nombre) >= 3);
+--
+---- Ejercicio 32
+--
+--INSERT INTO dbo.playlists (usuario_id, nombre)
+--VALUES
+--(1, N'Perreo Mañanero'),
+--(2, N'Rock para currar'),
+--(3, N'Code & Techno');
+--SELECT playlist_id, usuario_id, nombre, es_publica, descripcion
+--FROM dbo.playlists;
+--
+---- Ejercicio 33
+--
+--INSERT INTO dbo.playlist_canciones (playlist_id, cancion_id)
+--VALUES
+--(1, 103),
+--(1, 104),
+--(1, 113),
+--(2, 106),
+--(2, 107),
+--(2, 110);
+--
+--INSERT INTO dbo.playlist_canciones (playlist_id, cancion_id)
+--SELECT 3, canciones.cancion_id
+--FROM dbo.canciones
+--INNER JOIN dbo.generos ON generos.genero_id = canciones.genero_id
+--WHERE generos.nombre IN (N'House', N'Techno');
+--
+---- Ejercicio 34
+--
+--INSERT INTO dbo.playlist_canciones (playlist_id, cancion_id)
+--VALUES (1, 103);
+--
+---- Msg 2627: Clave primaria duplicada en playlist_canciones.
+--
+--INSERT INTO dbo.playlist_canciones (playlist_id, cancion_id)
+--VALUES (1, 999);
+--
+---- Msg 547: Clave foránea fallida, la canción 999 no existe en canciones.
+--
+--INSERT INTO dbo.playlists (usuario_id, nombre)
+--VALUES (1, N'AB');
+--
+---- Msg 547: Restricción CHECK fallida, el nombre debe tener al menos 3 caracteres.
+--
+--INSERT INTO dbo.playlists (usuario_id, nombre)
+--VALUES (1, N'Perreo Mañanero');
+--
+---- Msg 2627: Restricción UNIQUE fallida, el usuario ya tiene una playlist con ese nombre.
+--
+---- Ejercicio 35
+--
+--UPDATE dbo.playlists
+--SET descripcion = N'Guitarras para la oficina'
+--WHERE playlist_id = 2;
+--
+--UPDATE dbo.playlists
+--SET es_publica = 1
+--FROM dbo.playlists
+--INNER JOIN dbo.usuarios ON usuarios.usuario_id = playlists.usuario_id
+--WHERE usuarios.plan_suscripcion = N'Premium';
+--
+---- Ejercicio 36
+--
+--SELECT playlists.playlist_id,
+--usuarios.nombre_usuario,
+--playlists.nombre,
+--playlists.es_publica,
+--COUNT(playlist_canciones.cancion_id) AS num_canciones
+--FROM dbo.playlists
+--INNER JOIN dbo.usuarios ON usuarios.usuario_id = playlists.usuario_id
+--LEFT JOIN dbo.playlist_canciones ON playlist_canciones.playlist_id = playlists.playlist_id
+--GROUP BY playlists.playlist_id, usuarios.nombre_usuario, playlists.nombre, playlists.es_publica
+--ORDER BY playlists.playlist_id;
+--
+---- Ejercicio 37
+--
+--DELETE FROM dbo.playlist_canciones
+--WHERE playlist_id = 2 AND cancion_id = 110;
+--
+--DELETE FROM dbo.playlists
+--WHERE playlist_id = 3;
+--
+--DELETE FROM dbo.playlist_canciones
+--WHERE playlist_id = 3;
+--
+--DELETE FROM dbo.playlists
+--WHERE playlist_id = 3;
+--
+---- Ejercicio 38
+--
+--BEGIN TRANSACTION;
+--UPDATE dbo.usuarios
+--SET plan_suscripcion = N'Premium'
+--WHERE usuario_id = 2;
+--SELECT N'Dentro de la transacción' AS momento, plan_suscripcion
+--FROM dbo.usuarios
+--WHERE usuario_id = 2;
+--ROLLBACK TRANSACTION;
+--
+--SELECT N'Después del ROLLBACK' AS momento, plan_suscripcion
+--FROM dbo.usuarios
+--WHERE usuario_id = 2;
+--
+---- Ejercicio 39
+--
+--DROP TABLE IF EXISTS dbo.playlist_canciones;
+--DROP TABLE IF EXISTS dbo.playlists;
