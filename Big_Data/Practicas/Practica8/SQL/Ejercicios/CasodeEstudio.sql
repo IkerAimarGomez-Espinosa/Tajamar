@@ -158,7 +158,7 @@ GO
 --
 --SELECT pais_usuario, plan_suscripcion, reproducciones_validas, minutos
 --FROM dbo.vw_bi_consumo_pais_plan
---xORDER BY minutos DESC;
+--ORDER BY minutos DESC;
 --
 ---- Apartado 2
 --

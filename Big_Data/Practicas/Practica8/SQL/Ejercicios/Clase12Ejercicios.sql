@@ -64,10 +64,6 @@ GO
 --ORDER BY total_reproducciones DESC, c.titulo;
 
 ---- Ejercicio 7
----- La subconsulta devuelve también NULL: los anuncios de usuarios Free
----- (marta_rock, dani_dj, nachox) tienen cancion_id = NULL.
----- cancion_id NOT IN (..., NULL) se expande a cancion_id <> NULL, que es
----- UNKNOWN, así que la condición nunca es TRUE y no se devuelve ninguna fila.
 --SELECT c.titulo FROM dbo.canciones AS c
 --WHERE NOT EXISTS (SELECT 1
 --    FROM dbo.reproducciones AS r
