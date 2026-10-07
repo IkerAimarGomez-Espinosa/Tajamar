@@ -25,7 +25,7 @@ GO
 --    ) AS enriquecidas GROUP BY genero
 --) AS agregadas ORDER BY minutos DESC, genero;
 
--- Ejemplo 11
+---- Ejemplo 11
 
 --SELECT g0.genero_id, g0.nombre,
 --    CASE WHEN g0.genero_padre_id IS NULL THEN 0
@@ -42,7 +42,7 @@ GO
 --LEFT JOIN dbo.generos AS g3 ON g3.genero_id = g2.genero_padre_id
 --ORDER BY ruta;
 
--- Ejercicio 12
+---- Ejercicio 12
 
 --SELECT gr.nombre AS genero_principal,
 --    COUNT(r.reproduccion_id) AS reproducciones_validas
@@ -63,7 +63,7 @@ GO
 --AND r.tipo_contenido = N'Canción' AND r.segundos_escuchados >= 30
 --GROUP BY gr.nombre ORDER BY reproducciones_validas DESC;
 
--- Ejemplo 13
+---- Ejemplo 13
 
 --SELECT d.dia, COUNT(r.reproduccion_id) AS reproducciones
 --FROM ( SELECT DATEADD(DAY, n, CAST('2026-09-14' AS date)) AS dia

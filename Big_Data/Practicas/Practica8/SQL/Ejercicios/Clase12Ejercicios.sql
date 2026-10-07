@@ -1,0 +1,149 @@
+USE SonoraDB;
+GO
+
+---- Ejercicio 1
+--SELECT titulo, duracion_seg FROM dbo.canciones
+--WHERE duracion_seg > ( SELECT MAX(c.duracion_seg)
+--    FROM dbo.canciones AS c
+--    JOIN dbo.artistas  AS a ON a.artista_id = c.artista_id
+--    WHERE a.nombre = N'Luna Roja'
+--)
+--ORDER BY duracion_seg DESC;
+
+---- Ejercicio 2
+--SELECT titulo FROM dbo.canciones
+--WHERE cancion_id IN (SELECT cancion_id
+--    FROM dbo.reproducciones WHERE dispositivo = N'Smart TV'
+--)
+--ORDER BY titulo;
+
+---- Ejercicio 3
+--SELECT a.nombre FROM dbo.artistas AS a
+--WHERE NOT EXISTS ( SELECT 1 FROM dbo.canciones AS c
+--    WHERE c.artista_id = a.artista_id
+--);
+
+---- Ejercicio 4
+--SELECT u.nombre_usuario, u.plan_suscripcion
+--FROM dbo.usuarios AS u
+--WHERE EXISTS ( SELECT 1
+--    FROM dbo.reproducciones AS r WHERE r.usuario_id = u.usuario_id
+--    AND r.tipo_contenido = N'Anuncio'
+--)
+--ORDER BY u.nombre_usuario;
+
+---- Ejercicio 5
+--SELECT u.nombre_usuario, t.reproducciones_validas
+--FROM (SELECT usuario_id, COUNT(*) AS reproducciones_validas
+--    FROM dbo.reproducciones WHERE tipo_contenido = N'Canción'
+--    AND segundos_escuchados >= 30 GROUP BY usuario_id
+--) AS t
+--JOIN dbo.usuarios AS u ON u.usuario_id = t.usuario_id
+--WHERE t.reproducciones_validas >= 4
+--ORDER BY t.reproducciones_validas DESC, u.nombre_usuario;
+----
+--WITH t AS (SELECT usuario_id, COUNT(*) AS reproducciones_validas
+--    FROM dbo.reproducciones WHERE tipo_contenido = N'Canción'
+--    AND segundos_escuchados >= 30 GROUP BY usuario_id
+--)
+--SELECT u.nombre_usuario, t.reproducciones_validas
+--FROM t
+--JOIN dbo.usuarios AS u ON u.usuario_id = t.usuario_id
+--WHERE t.reproducciones_validas >= 4
+--ORDER BY t.reproducciones_validas DESC, u.nombre_usuario;
+
+---- Ejercicio 6
+--SELECT c.titulo, (SELECT COUNT(*)
+--    FROM dbo.reproducciones AS r
+--    WHERE r.cancion_id = c.cancion_id) AS total_reproducciones
+--FROM dbo.canciones AS c
+--WHERE c.artista_id IN (SELECT artista_id
+--    FROM dbo.artistas
+--    WHERE nombre IN (N'Nébula', N'DJ Coral')
+--)
+--ORDER BY total_reproducciones DESC, c.titulo;
+
+---- Ejercicio 7
+---- La subconsulta devuelve también NULL: los anuncios de usuarios Free
+---- (marta_rock, dani_dj, nachox) tienen cancion_id = NULL.
+---- cancion_id NOT IN (..., NULL) se expande a cancion_id <> NULL, que es
+---- UNKNOWN, así que la condición nunca es TRUE y no se devuelve ninguna fila.
+--SELECT c.titulo FROM dbo.canciones AS c
+--WHERE NOT EXISTS (SELECT 1
+--    FROM dbo.reproducciones AS r
+--    JOIN dbo.usuarios AS u ON u.usuario_id = r.usuario_id
+--    WHERE r.cancion_id = c.cancion_id AND u.plan_suscripcion = N'Free'
+--)
+--ORDER BY c.titulo;
+
+---- Ejercicio 8
+--SELECT s.usuario_id, s.nombre_usuario, s.plan_suscripcion
+--FROM dbo.stg_usuarios AS s
+--WHERE NOT EXISTS (SELECT 1
+--    FROM dbo.usuarios AS u WHERE u.usuario_id = s.usuario_id
+--)
+--ORDER BY s.usuario_id;
+----
+--INSERT INTO dbo.usuarios
+--(usuario_id, nombre_usuario, email, pais, plan_suscripcion, fecha_alta)
+--SELECT s.usuario_id, s.nombre_usuario, s.email, s.pais, s.plan_suscripcion, s.fecha_alta
+--FROM dbo.stg_usuarios AS s WHERE NOT EXISTS (SELECT 1
+--    FROM dbo.usuarios AS u WHERE u.usuario_id = s.usuario_id
+--);
+
+---- Ejercicio 9
+--WITH limpias AS (SELECT usuario_id, segundos_escuchados
+--    FROM dbo.reproducciones WHERE tipo_contenido = N'Canción'
+--    AND segundos_escuchados >= 30
+--),
+--enriquecidas AS (SELECT u.pais, u.plan_suscripcion, l.segundos_escuchados
+--    FROM limpias AS l
+--    JOIN dbo.usuarios AS u ON u.usuario_id = l.usuario_id
+--),
+--agregadas AS (
+--    SELECT pais, plan_suscripcion,
+--        COUNT(*) AS reproducciones,
+--        CAST(SUM(segundos_escuchados) / 60.0 AS decimal(6,1)) AS minutos
+--    FROM enriquecidas
+--    GROUP BY pais, plan_suscripcion
+--)
+--SELECT pais, plan_suscripcion, reproducciones, minutos
+--FROM agregadas ORDER BY minutos DESC;
+
+---- Ejercicio 10
+--WITH organigrama AS (SELECT empleado_id, nombre, puesto, jefe_id,
+--    0 AS nivel,
+--    CAST(nombre AS nvarchar(500)) AS ruta
+--    FROM dbo.empleados WHERE jefe_id IS NULL
+--    UNION ALL
+--    SELECT e.empleado_id, e.nombre, e.puesto, e.jefe_id, o.nivel + 1,
+--    CAST(o.ruta + N' > ' + e.nombre AS nvarchar(500))
+--    FROM dbo.empleados AS e
+--    JOIN organigrama AS o ON e.jefe_id = o.empleado_id
+--)
+--SELECT nombre, puesto, nivel, ruta FROM organigrama ORDER BY ruta;
+
+---- Ejercicio 11
+--WITH subgeneros AS (
+--    SELECT genero_id, nombre FROM dbo.generos
+--    WHERE nombre = N'Urbano'
+--    UNION ALL
+--    SELECT g.genero_id, g.nombre FROM dbo.generos AS g
+--    JOIN subgeneros AS s ON g.genero_padre_id = s.genero_id
+--)
+--SELECT c.titulo, s.nombre AS genero, a.nombre AS artista
+--FROM subgeneros AS s
+--JOIN dbo.canciones AS c ON c.genero_id  = s.genero_id
+--JOIN dbo.artistas  AS a ON a.artista_id = c.artista_id
+--ORDER BY s.nombre, c.titulo;
+
+---- Ejercicio 12
+--WITH area AS (SELECT empleado_id, nombre, puesto, 0 AS nivel
+--    FROM dbo.empleados WHERE nombre = N'Tomás Vidal'
+--    UNION ALL
+--    SELECT e.empleado_id, e.nombre, e.puesto, a.nivel + 1
+--    FROM dbo.empleados AS e
+--    JOIN area AS a ON e.jefe_id = a.empleado_id
+--)
+--SELECT nombre, puesto, nivel FROM area
+--WHERE nivel >= 1 ORDER BY nivel, nombre;
