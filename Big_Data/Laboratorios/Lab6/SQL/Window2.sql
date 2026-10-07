@@ -1,0 +1,1 @@
+ UPDATE dbo.OrderHistory SET Status = N'Shipped' WHERE OrderID = 1;

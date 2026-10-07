@@ -1,0 +1,11 @@
+ ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;
+ GO
+ EXEC dbo.GetCustomerOrders @CustomerID = 29485;
+ GO 10
+ ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;
+ GO
+ EXEC dbo.GetCustomerOrders @CustomerID = 1;
+ GO
+ EXEC dbo.GetCustomerOrders @CustomerID = 29485;
+ GO 10
+ EXEC sp_query_store_flush_db;
